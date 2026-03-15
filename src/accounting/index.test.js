@@ -322,9 +322,9 @@ describe("Business Rules Validation", () => {
   test("BR-005: Maximum balance cap", () => {
     dataProgram("WRITE", 999999.0);
     creditAccount(1.0);
-    // In Node.js there is no PIC overflow — balance goes to 1000000.00
-    // This test documents the difference from COBOL behavior
-    expect(dataProgram("READ")).toBeGreaterThanOrEqual(999999.99);
+    // COBOL PIC 9(6)V99 enforces a maximum of 999999.99
+    // After attempting to exceed the cap, the balance must not go past 999999.99
+    expect(dataProgram("READ")).toBe(999999.99);
   });
 });
 

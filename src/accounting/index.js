@@ -5,6 +5,7 @@ const readline = require("readline");
 // =============================================================================
 
 let storageBalance = 1000.0;
+const MAX_BALANCE = 999999.99;
 
 function dataProgram(operation, balance) {
   if (operation === "READ") {
@@ -24,13 +25,28 @@ function viewBalance() {
 }
 
 function creditAccount(amount) {
+  if (typeof amount !== "number" || !Number.isFinite(amount) || amount < 0) {
+    console.log("Invalid amount. Please enter a non-negative, finite number.");
+    return;
+  }
   let balance = dataProgram("READ");
-  balance = +(balance + amount).toFixed(2);
+  const newBalance = +(balance + amount).toFixed(2);
+  if (newBalance > MAX_BALANCE) {
+    console.log(
+      `Operation rejected. Resulting balance would exceed maximum allowed balance of ${formatBalance(MAX_BALANCE)}.`
+    );
+    return;
+  }
+  balance = newBalance;
   dataProgram("WRITE", balance);
   console.log(`Amount credited. New balance: ${formatBalance(balance)}`);
 }
 
 function debitAccount(amount) {
+  if (typeof amount !== "number" || !Number.isFinite(amount) || amount < 0) {
+    console.log("Invalid amount. Please enter a non-negative, finite number.");
+    return;
+  }
   let balance = dataProgram("READ");
   if (balance >= amount) {
     balance = +(balance - amount).toFixed(2);
@@ -73,7 +89,7 @@ function createInputReader() {
 
   rl.on("close", () => {
     closed = true;
-    // Reject any remaining waiters
+    // Resolve any remaining waiters with null to signal end of input
     while (waitingResolvers.length > 0) {
       waitingResolvers.shift()(null);
     }
